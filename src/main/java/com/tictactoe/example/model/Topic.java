@@ -37,25 +37,13 @@ public class Topic {
 
         if(ElemImageURL != null){
             this.image = ElemImageURL.attr("title");
-            System.out.println(this.image);
+//            System.out.println(this.image);
 
         }
 
         Element postbElems = d.select("div.post_wrap").first();
         this.info = postbElems.text();
-        System.out.println(postbElems.text());
-
-
-
-
-
-
-
-
-
-
-
-
+//        System.out.println(postbElems.text());
     }
 
 
