@@ -25,44 +25,28 @@ import java.util.stream.Collectors;
 
 @WebServlet("/getTopics")
 public class GetTopicsServlet extends HttpServlet {
-
-    private List<Topic> topicsAsync = Collections.synchronizedList(new ArrayList<>());
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = req.getSession();
-        resp.setContentType("text/html");
-        resp.setCharacterEncoding("UTF-8");
+        // Получаем текущую сессию
+        HttpSession session = req.getSession(false); // Используем `false`, чтобы не создавать новую сессию, если её нет
 
-        Parser parser = new Parser();
+        if (session != null) {
+            // Получаем список топиков из сессии
+            List<Topic> topics = (List<Topic>) session.getAttribute("topics");
 
-        // Асинхронно парсим категории
-        parser.parseCategoriesAsync().thenApply(aVoid -> {
-            // Создаем `CompletableFuture<Topic>` для каждой категории
+            if (topics != null) {
+                // Добавляем топики в атрибут запроса для передачи в JSP
+                req.setAttribute("topics", topics);
+            } else {
+                // Если топиков нет, можно задать пустой список или сообщение
+                req.setAttribute("message", "Топики пока не загружены.");
+            }
+        } else {
+            // Если сессии нет, можно задать сообщение об ошибке
+            req.setAttribute("message", "Сессия не найдена.");
+        }
 
-            return parser.getTormac().getCategories().stream()
-                    .map(Category::parseTopicAsync) // Предполагается, что этот метод возвращает `CompletableFuture<Topic>`
-                    .collect(Collectors.toList());
-        }).thenAccept(futures -> {
-            futures.forEach(topicFuture ->
-                topicFuture.thenAccept(topic -> {
-                    // Добавляем новый топик в коллекцию
-                    topicsAsync.addAll(topic);
-                    session.setAttribute("topics", topicsAsync);
-
-                    // Преобразуем топик в JSON
-                    String json = new Gson().toJson(topic);
-
-                    // Отправляем каждый топик по мере его парсинга
-                    try {
-                        resp.getWriter().write(json);
-                        resp.flushBuffer(); // Отправляем ответ сразу, без ожидания завершения
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }).exceptionally(ex -> {
-                    ex.printStackTrace();
-                    return null;
-                })
-            );
-        });
+        // Перенаправляем на `topics.jsp` для отображения данных
+        req.getRequestDispatcher("/topics.jsp").forward(req, resp);
     }
 }

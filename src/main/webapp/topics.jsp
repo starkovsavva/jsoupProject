@@ -1,53 +1,37 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ page import="com.tictactoe.example.model.Topic" %>
+<%@ page import="java.util.List" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta http-equiv="refresh" content="5">
     <meta charset="UTF-8">
     <title>Auto Update Topics</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-<h1>Auto Update Topics</h1>
+<h1>Topics</h1>
+
+<%
+    List<Topic> topics = (List<com.tictactoe.example.model.Topic>) request.getAttribute("topics");
+    String message = (String) request.getAttribute("message");
+%>
+
+<% if (topics != null && !topics.isEmpty()) { %>
 <div id="topics">
-    <c:forEach var="topic" items="${sessionScope.topics}">
-        <p>
-            Название: ${topic.name} <br>
-            Описание: ${topic.info} <br>
-            Дата создания: ${topic.date} <br>
-            Размер: ${topic.size} <br>
-        </p>
-    </c:forEach>
+    <% for (com.tictactoe.example.model.Topic topic : topics) { %>
+    <p>
+        Название: <%= topic.getName() %><br>
+        Описание: <%= topic.getInfo() %><br>
+        Дата создания: <%= topic.getDate() %><br>
+        Размер: <%= topic.getSize() %>
+    </p>
+    <% } %>
 </div>
+<% } else if (message != null) { %>
+<p><%= message %></p>
+<% } else { %>
+<p>Топики пока не загружены.</p>
+<% } %>
 
-<script>
-    $(document).ready(function() {
-        function updateTopics() {
-            $.ajax({
-                url: 'getTopics',
-                type: 'GET',
-                success: function(response) {
-                    var topics = JSON.parse(response);
-                    $('#topics').empty();
-                    topics.forEach(function(topic) {
-                        $('#topics').append(
-                            '<p>' +
-                            'Название: ' + topic.name + '<br>' +
-                            'Описание: ' + topic.info + '<br>' +
-                            'Дата создания: ' + topic.date + '<br>' +
-                            'Размер: ' + topic.size +
-                            '</p>'
-                        );
-                    });
-                },
-                complete: function() {
-                    setTimeout(updateTopics, 1000); // Обновляем раз в секунду
-                }
-            });
-        }
-
-        updateTopics();
-    });
-</script>
 </body>
 </html>

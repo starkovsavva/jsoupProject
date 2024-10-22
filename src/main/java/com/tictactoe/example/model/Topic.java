@@ -15,12 +15,12 @@ import java.util.ArrayList;
 
 @Data
 public class Topic {
-    private URI link;
-    private String image;
-    private String name;//
-    private String info; //post-b
-    private LocalDateTime date;
-    private String size;
+    public URI link;
+    public String image;
+    public String name;//
+    public String info; //post-b
+    public LocalDateTime date;
+    public String size;
     Topic(URI link, String name, LocalDateTime date, String size){
         this.link = link;
         this.name = name;
@@ -42,7 +42,10 @@ public class Topic {
         }
 
         Element postbElems = d.select("div.post_wrap").first();
-        this.info = postbElems.text();
+        if(postbElems != null){
+            this.info = postbElems.text();
+
+        }
 //        System.out.println(postbElems.text());
     }
 
